@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,8 +7,18 @@
 
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111}
-body{user-select:none;touch-action:none;cursor:grab}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111
+}
+body{
+  user-select:none;
+  touch-action:none;
+  cursor:grab
+}
 
 #view{
   position:fixed;
@@ -22,8 +31,8 @@ body{user-select:none;touch-action:none;cursor:grab}
   position:absolute;
   left:0;
   top:0;
-  width:8000px;
-  height:6000px;
+  width:14000px;
+  height:12000px;
   background:#1b1b1b;
   transform-origin:0 0;
   will-change:transform
@@ -96,10 +105,37 @@ body{user-select:none;touch-action:none;cursor:grab}
 #close{right:20px;top:20px}
 #prev{left:20px;top:50%;transform:translateY(-50%)}
 #next{right:20px;top:50%;transform:translateY(-50%)}
+
+#loading{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#111;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  font-size:18px;
+  transition:opacity .4s ease
+}
+
+#loading.hidden{
+  opacity:0;
+  pointer-events:none
+}
+
+#loadingText{
+  text-align:center
+}
 </style>
 </head>
 
 <body>
+
+<div id="loading">
+  <div id="loadingText">Loading memories…</div>
+</div>
 
 <div id="view">
   <div id="board"></div>
@@ -115,47 +151,226 @@ body{user-select:none;touch-action:none;cursor:grab}
 <script>
 
 /*
-  IMAGE FILES
-  ------------------------------------------------
-  Files are beside index.html.
+=========================================================
+AUTOMATIC GITHUB IMAGE DISCOVERY
+=========================================================
 
-  11.jpg
-  12.jpg
-  ...
-  199.jpg
+Instead of guessing filenames, this finds every image
+that actually exists in the same GitHub repository.
 
-  1100.jpg
-  1101.jpg
-  ...
-  1105.jpg
+So filenames like:
+
+11.jpg
+12.jpg
+...
+199.jpg
+1100.jpg
+1101.jpg
+...
+1105.jpg
+
+all work automatically.
+
+It also works if the images have another extension such
+as PNG, JPEG, WEBP, etc.
+=========================================================
 */
 
-const photos = [];
+const IMAGE_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif"
+];
+
+let photos = [];
+
 
 /*
-  11.jpg -> 99.jpg
+---------------------------------------------------------
+Find the GitHub repository from the current GitHub Pages
+URL.
+---------------------------------------------------------
 */
-for(let i = 11; i <= 99; i++){
-  photos.push(`${i}.jpg`);
+
+function getGitHubRepo(){
+
+  const host = location.hostname;
+  const path = location.pathname;
+
+  /*
+    Normal project GitHub Pages:
+
+    username.github.io/repository/
+
+    OR:
+
+    username.github.io/
+  */
+
+  if(host.endsWith(".github.io")){
+
+    const username =
+      host.replace(".github.io","");
+
+    const parts =
+      path.split("/").filter(Boolean);
+
+    /*
+      If this is username.github.io/repo/
+      then repo is the first path component.
+    */
+
+    if(parts.length > 0){
+
+      return {
+        owner: username,
+        repo: parts[0]
+      };
+
+    }
+
+    /*
+      User/organization page repository.
+    */
+
+    return {
+      owner: username,
+      repo: `${username}.github.io`
+    };
+
+  }
+
+  return null;
 }
+
 
 /*
-  110.jpg -> 199.jpg
+---------------------------------------------------------
+Get actual files from GitHub.
+---------------------------------------------------------
 */
-for(let i = 110; i <= 199; i++){
-  photos.push(`${i}.jpg`);
+
+async function findImages(){
+
+  const repoInfo = getGitHubRepo();
+
+  if(!repoInfo){
+
+    throw new Error(
+      "Could not determine the GitHub repository."
+    );
+
+  }
+
+
+  const apiURL =
+    `https://api.github.com/repos/${encodeURIComponent(repoInfo.owner)}/${encodeURIComponent(repoInfo.repo)}/contents/`;
+
+
+  const response =
+    await fetch(apiURL, {
+      cache:"no-store"
+    });
+
+
+  if(!response.ok){
+
+    throw new Error(
+      `GitHub returned ${response.status}`
+    );
+
+  }
+
+
+  const files = await response.json();
+
+
+  if(!Array.isArray(files)){
+
+    throw new Error(
+      "GitHub did not return a file list."
+    );
+
+  }
+
+
+  /*
+    Keep only actual image files.
+  */
+
+  const images = files.filter(file => {
+
+    if(file.type !== "file")
+      return false;
+
+    const name =
+      file.name.toLowerCase();
+
+    return IMAGE_EXTENSIONS.some(ext =>
+      name.endsWith(ext)
+    );
+
+  });
+
+
+  /*
+    Sort naturally.
+
+    This means:
+
+    11
+    12
+    ...
+    99
+    110
+    ...
+    199
+    1100
+    ...
+
+    instead of normal alphabetical sorting.
+  */
+
+  images.sort((a,b)=>{
+
+    const na =
+      parseInt(
+        a.name.match(/\d+/)?.[0] || "0",
+        10
+      );
+
+    const nb =
+      parseInt(
+        b.name.match(/\d+/)?.[0] || "0",
+        10
+      );
+
+    if(na !== nb)
+      return na - nb;
+
+    return a.name.localeCompare(b.name);
+
+  });
+
+
+  return images.map(file => file.download_url);
+
 }
+
 
 /*
-  1100.jpg -> 1105.jpg
+---------------------------------------------------------
+Build the board.
+---------------------------------------------------------
 */
-for(let i = 1100; i <= 1105; i++){
-  photos.push(`${i}.jpg`);
-}
 
+const view =
+  document.getElementById("view");
 
-const view = document.getElementById("view");
-const board = document.getElementById("board");
+const board =
+  document.getElementById("board");
 
 let scale = .45;
 let tx = -2500;
@@ -171,6 +386,7 @@ let wasDragging = false;
 
 let lx = 0;
 let ly = 0;
+
 let current = 0;
 
 
@@ -183,7 +399,7 @@ function clamp(){
   targetX = Math.min(
     250,
     Math.max(
-      w - 8000 * s - 250,
+      w - 14000 * s - 250,
       targetX
     )
   );
@@ -191,52 +407,71 @@ function clamp(){
   targetY = Math.min(
     200,
     Math.max(
-      h - 6000 * s - 200,
+      h - 12000 * s - 200,
       targetY
     )
   );
+
 }
 
 
 function build(){
 
-  const cols = 10;
+  /*
+    Number of columns.
+    More columns means the board fills horizontally
+    before going down.
+  */
+
+  const cols = 14;
+
   const sx = 650;
   const sy = 650;
 
+
   photos.forEach((src,i)=>{
 
-    const el = document.createElement("div");
+    const el =
+      document.createElement("div");
+
     el.className = "photo";
 
-    const img = document.createElement("img");
+
+    const img =
+      document.createElement("img");
+
 
     img.loading = "lazy";
     img.decoding = "async";
-
-    /*
-      IMPORTANT:
-      src is exactly the filename.
-      No 001 prefix is added.
-    */
     img.src = src;
-
     img.alt = "";
     img.draggable = false;
 
 
+    /*
+      Automatically size each frame according
+      to the actual image aspect ratio.
+    */
+
     const setSize = ()=>{
 
-      const nw = img.naturalWidth || 4;
-      const nh = img.naturalHeight || 3;
+      const nw =
+        img.naturalWidth || 4;
+
+      const nh =
+        img.naturalHeight || 3;
+
 
       const maxSide = 430;
       const minSide = 210;
 
-      const ratio = nw / nh;
+      const ratio =
+        nw / nh;
+
 
       let w;
       let h;
+
 
       if(ratio >= 1){
 
@@ -250,19 +485,25 @@ function build(){
 
       }
 
-      const minDim = Math.min(w,h);
+
+      const minDim =
+        Math.min(w,h);
+
 
       if(minDim < minSide){
 
-        const k = minSide / minDim;
+        const k =
+          minSide / minDim;
 
         w *= k;
         h *= k;
 
       }
 
-      const bottom = 34;
+
       const pad = 14;
+      const bottom = 34;
+
 
       el.style.setProperty(
         "--w",
@@ -277,27 +518,53 @@ function build(){
     };
 
 
-    img.addEventListener("load",setSize);
+    img.addEventListener(
+      "load",
+      setSize
+    );
+
 
     /*
-      If an image fails, keep the frame
-      but don't break the rest of the board.
+      If one image fails, it doesn't
+      break the entire board.
     */
-    img.addEventListener("error",()=>{
-      console.warn("Could not load image:",src);
-    });
+
+    img.addEventListener(
+      "error",
+      ()=>{
+        console.warn(
+          "Failed to load:",
+          src
+        );
+      }
+    );
+
 
     setSize();
 
 
-    const col = i % cols;
-    const row = Math.floor(i / cols);
+    const col =
+      i % cols;
+
+    const row =
+      Math.floor(i / cols);
+
 
     el.style.left =
-      (430 + col * sx + ((i * 37) % 100 - 50)) + "px";
+      (
+        430 +
+        col * sx +
+        ((i * 37) % 100 - 50)
+      ) + "px";
+
 
     el.style.top =
-      (300 + row * sy + ((i * 29) % 100 - 50)) + "px";
+      (
+        300 +
+        row * sy +
+        ((i * 29) % 100 - 50)
+      ) + "px";
+
 
     el.style.transform =
       `rotate(${((i * 17) % 9) - 4}deg)`;
@@ -305,6 +572,7 @@ function build(){
 
     el.innerHTML =
       '<span class="pin"></span>';
+
 
     el.appendChild(img);
 
@@ -326,53 +594,90 @@ function build(){
 }
 
 
+/*
+---------------------------------------------------------
+Animation
+---------------------------------------------------------
+*/
+
 function render(){
 
-  scale += (targetScale - scale) * .18;
-  tx += (targetX - tx) * .18;
-  ty += (targetY - ty) * .18;
+  scale +=
+    (targetScale - scale) * .18;
+
+  tx +=
+    (targetX - tx) * .18;
+
+  ty +=
+    (targetY - ty) * .18;
+
 
   board.style.transform =
     `translate3d(${tx}px,${ty}px,0) scale(${scale})`;
+
 
   requestAnimationFrame(render);
 
 }
 
 
+/*
+---------------------------------------------------------
+Dragging
+---------------------------------------------------------
+*/
+
 view.onpointerdown = e =>{
 
-  if(e.button !== 0) return;
+  if(e.button !== 0)
+    return;
+
 
   down = true;
   moved = false;
 
+
   lx = e.clientX;
   ly = e.clientY;
 
-  view.setPointerCapture(e.pointerId);
+
+  view.setPointerCapture(
+    e.pointerId
+  );
 
 };
 
 
 view.onpointermove = e =>{
 
-  if(!down) return;
+  if(!down)
+    return;
 
-  const dx = e.clientX - lx;
-  const dy = e.clientY - ly;
 
-  if(Math.abs(dx) > 3 || Math.abs(dy) > 3){
+  const dx =
+    e.clientX - lx;
+
+  const dy =
+    e.clientY - ly;
+
+
+  if(
+    Math.abs(dx) > 3 ||
+    Math.abs(dy) > 3
+  ){
 
     moved = true;
     wasDragging = true;
 
   }
 
+
   targetX += dx;
   targetY += dy;
 
+
   clamp();
+
 
   lx = e.clientX;
   ly = e.clientY;
@@ -384,11 +689,19 @@ view.onpointerup = e =>{
 
   down = false;
 
-  if(view.hasPointerCapture(e.pointerId)){
 
-    view.releasePointerCapture(e.pointerId);
+  if(
+    view.hasPointerCapture(
+      e.pointerId
+    )
+  ){
+
+    view.releasePointerCapture(
+      e.pointerId
+    );
 
   }
+
 
   setTimeout(()=>{
 
@@ -400,27 +713,54 @@ view.onpointerup = e =>{
 };
 
 
+/*
+---------------------------------------------------------
+Zoom
+---------------------------------------------------------
+*/
+
 view.onwheel = e =>{
 
   e.preventDefault();
 
-  const old = targetScale;
 
-  const f = Math.exp(-e.deltaY * .0012);
+  const old =
+    targetScale;
+
+
+  const f =
+    Math.exp(
+      -e.deltaY * .0012
+    );
+
 
   targetScale =
     Math.max(
       .12,
-      Math.min(3.2,old * f)
+      Math.min(
+        3.2,
+        old * f
+      )
     );
 
-  const r = view.getBoundingClientRect();
 
-  const mx = e.clientX - r.left;
-  const my = e.clientY - r.top;
+  const r =
+    view.getBoundingClientRect();
 
-  const bx = (mx - targetX) / old;
-  const by = (my - targetY) / old;
+
+  const mx =
+    e.clientX - r.left;
+
+  const my =
+    e.clientY - r.top;
+
+
+  const bx =
+    (mx - targetX) / old;
+
+  const by =
+    (my - targetY) / old;
+
 
   targetX =
     mx - bx * targetScale;
@@ -428,10 +768,17 @@ view.onwheel = e =>{
   targetY =
     my - by * targetScale;
 
+
   clamp();
 
 };
 
+
+/*
+---------------------------------------------------------
+Keyboard
+---------------------------------------------------------
+*/
 
 window.onkeydown = e =>{
 
@@ -447,9 +794,12 @@ window.onkeydown = e =>{
       prev();
 
     return;
+
   }
 
+
   const p = 100;
+
 
   if(e.key === "ArrowLeft")
     targetX += p;
@@ -463,7 +813,11 @@ window.onkeydown = e =>{
   if(e.key === "ArrowDown")
     targetY -= p;
 
-  if(e.key === "+" || e.key === "="){
+
+  if(
+    e.key === "+" ||
+    e.key === "="
+  ){
 
     targetScale =
       Math.min(
@@ -473,7 +827,11 @@ window.onkeydown = e =>{
 
   }
 
-  if(e.key === "-" || e.key === "_"){
+
+  if(
+    e.key === "-" ||
+    e.key === "_"
+  ){
 
     targetScale =
       Math.max(
@@ -483,10 +841,17 @@ window.onkeydown = e =>{
 
   }
 
+
   clamp();
 
 };
 
+
+/*
+---------------------------------------------------------
+Viewer
+---------------------------------------------------------
+*/
 
 const viewer =
   document.getElementById("viewer");
@@ -499,7 +864,8 @@ function openViewer(i){
 
   current = i;
 
-  big.src = photos[i];
+  big.src =
+    photos[current];
 
   viewer.classList.add("open");
 
@@ -508,7 +874,9 @@ function openViewer(i){
 
 function closeViewer(){
 
-  viewer.classList.remove("open");
+  viewer.classList.remove(
+    "open"
+  );
 
   big.removeAttribute("src");
 
@@ -518,7 +886,8 @@ function closeViewer(){
 function next(){
 
   current =
-    (current + 1) % photos.length;
+    (current + 1) %
+    photos.length;
 
   big.src =
     photos[current];
@@ -529,7 +898,11 @@ function next(){
 function prev(){
 
   current =
-    (current - 1 + photos.length) % photos.length;
+    (
+      current -
+      1 +
+      photos.length
+    ) % photos.length;
 
   big.src =
     photos[current];
@@ -537,14 +910,14 @@ function prev(){
 }
 
 
-document.getElementById("close").onclick =
-  closeViewer;
+document.getElementById("close")
+  .onclick = closeViewer;
 
-document.getElementById("next").onclick =
-  next;
+document.getElementById("next")
+  .onclick = next;
 
-document.getElementById("prev").onclick =
-  prev;
+document.getElementById("prev")
+  .onclick = prev;
 
 
 viewer.onclick = e =>{
@@ -555,16 +928,80 @@ viewer.onclick = e =>{
 };
 
 
-build();
-clamp();
-render();
+/*
+=========================================================
+START
+=========================================================
+*/
+
+(async()=>{
+
+  const loadingText =
+    document.getElementById("loadingText");
+
+  try{
+
+    loadingText.textContent =
+      "Finding your pictures…";
+
+
+    photos = await findImages();
+
+
+    if(!photos.length){
+
+      throw new Error(
+        "No image files were found in the repository."
+      );
+
+    }
+
+
+    loadingText.textContent =
+      `Found ${photos.length} pictures…`;
+
+
+    build();
+    clamp();
+    render();
+
+
+    setTimeout(()=>{
+
+      document
+        .getElementById("loading")
+        .classList.add("hidden");
+
+    },500);
+
+
+    console.log(
+      `Loaded ${photos.length} images`
+    );
+
+    console.log(photos);
+
+  }catch(error){
+
+    console.error(error);
+
+
+    loadingText.innerHTML =
+      `
+      <div>
+        <b>Couldn't load the pictures.</b>
+        <br><br>
+        ${error.message}
+        <br><br>
+        Open the browser console (F12) for details.
+      </div>
+      `;
+
+  }
+
+})();
 
 </script>
 
 </body>
 </html>
-```
-
-**One thing I want to make crystal clear:** this version assumes the files are literally named `11.jpg`, `12.jpg`, … `199.jpg`, `1100.jpg` … `1105.jpg`, and that they are in the **same directory as `index.html`**.
-
-If GitHub shows the filenames differently, the browser will show empty frames because the URL literally doesn't exist.
