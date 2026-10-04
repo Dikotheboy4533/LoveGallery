@@ -1,12 +1,16 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pinboard</title>
+<title>Our Little Pinboard ♡</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box
+}
+
 html,body{
   margin:0;
   width:100%;
@@ -14,11 +18,16 @@ html,body{
   overflow:hidden;
   background:#111
 }
+
 body{
   user-select:none;
   touch-action:none;
   cursor:grab
 }
+
+/* =====================================================
+   BOARD
+===================================================== */
 
 #view{
   position:fixed;
@@ -31,53 +40,111 @@ body{
   position:absolute;
   left:0;
   top:0;
-  width:14000px;
-  height:12000px;
+  width:16000px;
+  height:16000px;
   background:#1b1b1b;
   transform-origin:0 0;
   will-change:transform
 }
 
+
+/* =====================================================
+   PHOTO FRAMES
+===================================================== */
+
 .photo{
   position:absolute;
+
+  /*
+    Width and height are set automatically
+    from the actual image dimensions.
+  */
+
   width:var(--w);
   height:var(--h);
+
   padding:14px 14px 34px;
+
   background:#eee;
-  box-shadow:0 10px 28px #0008;
-  cursor:pointer
+
+  box-shadow:
+    0 10px 28px #0008;
+
+  cursor:pointer;
+
+  transition:
+    box-shadow .2s ease,
+    transform .2s ease;
 }
+
+.photo:hover{
+  box-shadow:
+    0 14px 35px #000b;
+}
+
+
+/*
+  IMPORTANT:
+
+  The image itself is NEVER cropped.
+
+  contain = entire image always visible.
+*/
 
 .photo img{
   width:100%;
   height:100%;
+
   display:block;
+
   object-fit:contain;
+
   background:#ddd;
-  pointer-events:none
+
+  pointer-events:none;
 }
+
+
+/* Pin */
 
 .pin{
   position:absolute;
+
   z-index:2;
+
   left:50%;
   top:-8px;
+
   width:15px;
   height:15px;
+
   transform:translateX(-50%);
+
   border-radius:50%;
+
   background:#aaa;
-  box-shadow:0 2px 5px #000a
+
+  box-shadow:
+    0 2px 5px #000a
 }
+
+
+/* =====================================================
+   FULLSCREEN IMAGE VIEWER
+===================================================== */
 
 .viewer{
   position:fixed;
   inset:0;
+
   display:none;
+
   align-items:center;
   justify-content:center;
+
   background:#000f;
-  z-index:10
+
+  z-index:50
 }
 
 .viewer.open{
@@ -87,94 +154,469 @@ body{
 .viewer img{
   max-width:94vw;
   max-height:94vh;
+
+  width:auto;
+  height:auto;
+
   object-fit:contain
 }
 
 .viewer button{
   position:absolute;
+
   width:48px;
   height:48px;
+
   border:0;
   border-radius:50%;
+
   color:#fff;
   background:#ffffff1a;
+
   font-size:28px;
+
   cursor:pointer
 }
 
-#close{right:20px;top:20px}
-#prev{left:20px;top:50%;transform:translateY(-50%)}
-#next{right:20px;top:50%;transform:translateY(-50%)}
+#close{
+  right:20px;
+  top:20px
+}
+
+#prev{
+  left:20px;
+  top:50%;
+
+  transform:translateY(-50%)
+}
+
+#next{
+  right:20px;
+  top:50%;
+
+  transform:translateY(-50%)
+}
+
+
+/* =====================================================
+   ROMANTIC LOADING SCREEN
+===================================================== */
 
 #loading{
   position:fixed;
   inset:0;
-  z-index:20;
+
+  z-index:100;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  background:#111;
-  color:#fff;
-  font-family:Arial,sans-serif;
-  font-size:18px;
-  transition:opacity .4s ease
+
+  overflow:hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      #3b2349 0%,
+      #201526 38%,
+      #100d15 100%
+    );
+
+  transition:
+    opacity .8s ease,
+    visibility .8s ease;
 }
 
 #loading.hidden{
   opacity:0;
+  visibility:hidden;
   pointer-events:none
 }
 
-#loadingText{
-  text-align:center
+
+/* tiny stars */
+
+.loading-stars{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+}
+
+.star{
+  position:absolute;
+
+  width:3px;
+  height:3px;
+
+  border-radius:50%;
+
+  background:#fff;
+
+  opacity:.6;
+
+  animation:
+    twinkle 2s ease-in-out infinite;
+}
+
+@keyframes twinkle{
+
+  0%,100%{
+    opacity:.2;
+    transform:scale(.7)
+  }
+
+  50%{
+    opacity:1;
+    transform:scale(1.3)
+  }
+
+}
+
+
+/* floating hearts */
+
+.heart{
+  position:absolute;
+
+  bottom:-40px;
+
+  color:#ffb7d5;
+
+  font-size:18px;
+
+  opacity:0;
+
+  animation:
+    floatHeart linear forwards;
+}
+
+@keyframes floatHeart{
+
+  0%{
+    transform:
+      translateY(0)
+      rotate(0deg)
+      scale(.7);
+
+    opacity:0
+  }
+
+  15%{
+    opacity:.75
+  }
+
+  85%{
+    opacity:.5
+  }
+
+  100%{
+    transform:
+      translateY(-110vh)
+      rotate(25deg)
+      scale(1.15);
+
+    opacity:0
+  }
+
+}
+
+
+/* center */
+
+.loading-content{
+  position:relative;
+
+  z-index:2;
+
+  text-align:center;
+
+  color:white;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+}
+
+
+/* heart */
+
+.loading-heart{
+  width:76px;
+  height:76px;
+
+  margin:0 auto 24px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:50%;
+
+  background:#ffffff10;
+
+  box-shadow:
+    0 0 45px #ff8fbd33;
+
+  font-size:38px;
+
+  animation:
+    heartbeat 1.6s ease-in-out infinite;
+}
+
+@keyframes heartbeat{
+
+  0%,100%{
+    transform:scale(1)
+  }
+
+  15%{
+    transform:scale(1.12)
+  }
+
+  30%{
+    transform:scale(1)
+  }
+
+  45%{
+    transform:scale(1.08)
+  }
+
+}
+
+
+/* title */
+
+.loading-title{
+  font-size:28px;
+
+  letter-spacing:.5px;
+
+  margin-bottom:10px;
+}
+
+
+/* subtitle */
+
+.loading-subtitle{
+  font-family:
+    Arial,
+    sans-serif;
+
+  font-size:13px;
+
+  color:#d8cbd8;
+
+  letter-spacing:.4px;
+}
+
+
+/* progress */
+
+.loading-progress{
+  width:190px;
+  height:3px;
+
+  margin:24px auto 0;
+
+  border-radius:10px;
+
+  overflow:hidden;
+
+  background:#ffffff14;
+}
+
+.loading-progress-bar{
+  width:0%;
+  height:100%;
+
+  border-radius:10px;
+
+  background:#f5b4d1;
+
+  transition:
+    width .25s ease;
+}
+
+
+/* =====================================================
+   SMALL STATUS
+===================================================== */
+
+#loadStatus{
+  margin-top:10px;
+
+  font-family:Arial,sans-serif;
+
+  font-size:11px;
+
+  color:#b9aaba;
+
+  min-height:15px;
 }
 </style>
 </head>
 
+
 <body>
 
+
+<!-- ===================================================
+     LOADING SCREEN
+=================================================== -->
+
 <div id="loading">
-  <div id="loadingText">Loading memories…</div>
+
+  <div class="loading-stars" id="loadingStars"></div>
+
+  <div class="loading-content">
+
+    <div class="loading-heart">
+      ♡
+    </div>
+
+    <div class="loading-title">
+      Our little memories
+    </div>
+
+    <div class="loading-subtitle">
+      putting everything together for you...
+    </div>
+
+    <div class="loading-progress">
+      <div
+        class="loading-progress-bar"
+        id="loadingBar">
+      </div>
+    </div>
+
+    <div id="loadStatus">
+      finding your pictures ♡
+    </div>
+
+  </div>
+
 </div>
+
+
+<!-- ===================================================
+     BOARD
+=================================================== -->
 
 <div id="view">
+
   <div id="board"></div>
+
 </div>
 
+
+<!-- ===================================================
+     VIEWER
+=================================================== -->
+
 <div class="viewer" id="viewer">
-  <button id="close">×</button>
-  <button id="prev">‹</button>
-  <img id="big" alt="">
-  <button id="next">›</button>
+
+  <button id="close">
+    ×
+  </button>
+
+  <button id="prev">
+    ‹
+  </button>
+
+  <img
+    id="big"
+    alt=""
+  >
+
+  <button id="next">
+    ›
+  </button>
+
 </div>
+
 
 <script>
 
+/* =====================================================
+   LOADING SCREEN EFFECTS
+===================================================== */
+
+const loadingStars =
+  document.getElementById("loadingStars");
+
+
 /*
-=========================================================
-AUTOMATIC GITHUB IMAGE DISCOVERY
-=========================================================
-
-Instead of guessing filenames, this finds every image
-that actually exists in the same GitHub repository.
-
-So filenames like:
-
-11.jpg
-12.jpg
-...
-199.jpg
-1100.jpg
-1101.jpg
-...
-1105.jpg
-
-all work automatically.
-
-It also works if the images have another extension such
-as PNG, JPEG, WEBP, etc.
-=========================================================
+  Small amount of stars so the loading screen
+  stays lightweight.
 */
+
+for(let i=0;i<55;i++){
+
+  const star =
+    document.createElement("div");
+
+  star.className = "star";
+
+  star.style.left =
+    Math.random()*100 + "%";
+
+  star.style.top =
+    Math.random()*100 + "%";
+
+  star.style.animationDelay =
+    Math.random()*2 + "s";
+
+  star.style.animationDuration =
+    (1.5 + Math.random()*2) + "s";
+
+  loadingStars.appendChild(star);
+
+}
+
+
+/*
+  Floating hearts.
+*/
+
+function createHeart(){
+
+  const heart =
+    document.createElement("div");
+
+  heart.className = "heart";
+
+  heart.textContent =
+    Math.random() > .5 ? "♡" : "♥";
+
+  heart.style.left =
+    Math.random()*100 + "%";
+
+  heart.style.fontSize =
+    (12 + Math.random()*13) + "px";
+
+  heart.style.animationDuration =
+    (7 + Math.random()*6) + "s";
+
+  document
+    .getElementById("loading")
+    .appendChild(heart);
+
+
+  setTimeout(()=>{
+    heart.remove();
+  },14000);
+
+}
+
+
+const heartTimer =
+  setInterval(createHeart,900);
+
+
+/* =====================================================
+   GITHUB IMAGE DISCOVERY
+===================================================== */
 
 const IMAGE_EXTENSIONS = [
   ".jpg",
@@ -184,107 +626,111 @@ const IMAGE_EXTENSIONS = [
   ".gif"
 ];
 
+
 let photos = [];
 
 
 /*
----------------------------------------------------------
-Find the GitHub repository from the current GitHub Pages
-URL.
----------------------------------------------------------
+  Determine GitHub repository.
 */
 
 function getGitHubRepo(){
 
-  const host = location.hostname;
-  const path = location.pathname;
+  const host =
+    location.hostname;
+
+  const path =
+    location.pathname;
+
+
+  if(!host.endsWith(".github.io")){
+
+    return null;
+
+  }
+
+
+  const owner =
+    host.replace(
+      ".github.io",
+      ""
+    );
+
+
+  const parts =
+    path
+      .split("/")
+      .filter(Boolean);
+
 
   /*
-    Normal project GitHub Pages:
-
+    Project Pages:
     username.github.io/repository/
-
-    OR:
-
-    username.github.io/
   */
 
-  if(host.endsWith(".github.io")){
-
-    const username =
-      host.replace(".github.io","");
-
-    const parts =
-      path.split("/").filter(Boolean);
-
-    /*
-      If this is username.github.io/repo/
-      then repo is the first path component.
-    */
-
-    if(parts.length > 0){
-
-      return {
-        owner: username,
-        repo: parts[0]
-      };
-
-    }
-
-    /*
-      User/organization page repository.
-    */
+  if(parts.length > 0){
 
     return {
-      owner: username,
-      repo: `${username}.github.io`
+      owner,
+      repo:parts[0]
     };
 
   }
 
-  return null;
+
+  /*
+    User Pages:
+    username.github.io
+  */
+
+  return {
+    owner,
+    repo:`${owner}.github.io`
+  };
+
 }
 
 
 /*
----------------------------------------------------------
-Get actual files from GitHub.
----------------------------------------------------------
+  Find every actual image in the repository.
 */
 
 async function findImages(){
 
-  const repoInfo = getGitHubRepo();
+  const repoInfo =
+    getGitHubRepo();
+
 
   if(!repoInfo){
 
     throw new Error(
-      "Could not determine the GitHub repository."
+      "Could not determine GitHub repository."
     );
 
   }
 
 
   const apiURL =
-    `https://api.github.com/repos/${encodeURIComponent(repoInfo.owner)}/${encodeURIComponent(repoInfo.repo)}/contents/`;
+    `https://api.github.com/repos/` +
+    `${encodeURIComponent(repoInfo.owner)}/` +
+    `${encodeURIComponent(repoInfo.repo)}/contents/`;
 
 
   const response =
-    await fetch(apiURL, {
-      cache:"no-store"
-    });
+    await fetch(apiURL);
 
 
   if(!response.ok){
 
     throw new Error(
-      `GitHub returned ${response.status}`
+      `GitHub returned ${response.status}.`
     );
 
   }
 
 
-  const files = await response.json();
+  const files =
+    await response.json();
 
 
   if(!Array.isArray(files)){
@@ -297,28 +743,29 @@ async function findImages(){
 
 
   /*
-    Keep only actual image files.
+    Only image files.
   */
 
-  const images = files.filter(file => {
+  const images =
+    files.filter(file=>{
 
-    if(file.type !== "file")
-      return false;
+      if(file.type !== "file")
+        return false;
 
-    const name =
-      file.name.toLowerCase();
 
-    return IMAGE_EXTENSIONS.some(ext =>
-      name.endsWith(ext)
-    );
+      const name =
+        file.name.toLowerCase();
 
-  });
+
+      return IMAGE_EXTENSIONS.some(
+        ext=>name.endsWith(ext)
+      );
+
+    });
 
 
   /*
-    Sort naturally.
-
-    This means:
+    Natural numerical ordering.
 
     11
     12
@@ -329,42 +776,55 @@ async function findImages(){
     199
     1100
     ...
-
-    instead of normal alphabetical sorting.
   */
 
   images.sort((a,b)=>{
 
+    const getNumber = name => {
+
+      const match =
+        name.match(/\d+/);
+
+      return match
+        ? parseInt(match[0],10)
+        : Infinity;
+
+    };
+
+
     const na =
-      parseInt(
-        a.name.match(/\d+/)?.[0] || "0",
-        10
-      );
+      getNumber(a.name);
 
     const nb =
-      parseInt(
-        b.name.match(/\d+/)?.[0] || "0",
-        10
-      );
+      getNumber(b.name);
 
-    if(na !== nb)
+
+    if(na !== nb){
+
       return na - nb;
 
-    return a.name.localeCompare(b.name);
+    }
+
+
+    return a.name.localeCompare(
+      b.name,
+      undefined,
+      {numeric:true}
+    );
 
   });
 
 
-  return images.map(file => file.download_url);
+  return images.map(
+    file=>file.download_url
+  );
 
 }
 
 
-/*
----------------------------------------------------------
-Build the board.
----------------------------------------------------------
-*/
+/* =====================================================
+   BOARD
+===================================================== */
 
 const view =
   document.getElementById("view");
@@ -372,15 +832,19 @@ const view =
 const board =
   document.getElementById("board");
 
+
 let scale = .45;
+
 let tx = -2500;
 let ty = -1800;
 
 let targetScale = .45;
+
 let targetX = tx;
 let targetY = ty;
 
 let down = false;
+
 let moved = false;
 let wasDragging = false;
 
@@ -390,43 +854,43 @@ let ly = 0;
 let current = 0;
 
 
-function clamp(){
+/* =====================================================
+   SMART LAYOUT
+===================================================== */
 
-  const w = innerWidth;
-  const h = innerHeight;
-  const s = targetScale;
+/*
+  THIS is the important change.
 
-  targetX = Math.min(
-    250,
-    Math.max(
-      w - 14000 * s - 250,
-      targetX
-    )
-  );
+  We don't use a fixed 650x650 grid anymore.
 
-  targetY = Math.min(
-    200,
-    Math.max(
-      h - 12000 * s - 200,
-      targetY
-    )
-  );
+  Every frame is first sized from its image.
 
-}
+  Then we calculate its actual position so the next
+  frame is placed AFTER the previous frame.
 
+  Therefore frames cannot collide even when images
+  have completely different aspect ratios.
+*/
 
 function build(){
 
+  const gapX = 100;
+  const gapY = 110;
+
+  const startX = 450;
+  const startY = 350;
+
   /*
-    Number of columns.
-    More columns means the board fills horizontally
-    before going down.
+    Maximum row width.
   */
 
-  const cols = 14;
+  const maxRowWidth = 8000;
 
-  const sx = 650;
-  const sy = 650;
+
+  let x = startX;
+  let y = startY;
+
+  let rowHeight = 0;
 
 
   photos.forEach((src,i)=>{
@@ -443,77 +907,162 @@ function build(){
 
     img.loading = "lazy";
     img.decoding = "async";
+
     img.src = src;
+
     img.alt = "";
+
     img.draggable = false;
 
 
     /*
-      Automatically size each frame according
-      to the actual image aspect ratio.
+      Calculate frame dimensions from the
+      ACTUAL image dimensions.
+
+      No fixed image box.
+      No cropping.
     */
 
     const setSize = ()=>{
 
       const nw =
-        img.naturalWidth || 4;
+        img.naturalWidth || 1;
 
       const nh =
-        img.naturalHeight || 3;
+        img.naturalHeight || 1;
 
+
+      /*
+        Keep the longest side within this size.
+
+        Increase this number if you want
+        larger pictures.
+      */
 
       const maxSide = 430;
-      const minSide = 210;
 
       const ratio =
         nw / nh;
 
 
-      let w;
-      let h;
+      let imageW;
+      let imageH;
 
 
       if(ratio >= 1){
 
-        w = maxSide;
-        h = w / ratio;
+        imageW = maxSide;
+
+        imageH =
+          maxSide / ratio;
 
       }else{
 
-        h = maxSide;
-        w = h * ratio;
+        imageH = maxSide;
+
+        imageW =
+          maxSide * ratio;
 
       }
 
 
-      const minDim =
-        Math.min(w,h);
+      /*
+        Don't let extremely thin images
+        become ridiculously tiny.
+      */
+
+      const minSide = 210;
+
+      const smallest =
+        Math.min(
+          imageW,
+          imageH
+        );
 
 
-      if(minDim < minSide){
+      if(smallest < minSide){
 
-        const k =
-          minSide / minDim;
+        const multiplier =
+          minSide / smallest;
 
-        w *= k;
-        h *= k;
+        imageW *= multiplier;
+        imageH *= multiplier;
 
       }
 
 
-      const pad = 14;
-      const bottom = 34;
+      /*
+        Frame dimensions.
+
+        14px sides
+        14px top
+        34px bottom
+      */
+
+      const frameW =
+        imageW + 28;
+
+      const frameH =
+        imageH + 48;
 
 
       el.style.setProperty(
         "--w",
-        Math.round(w + pad * 2) + "px"
+        Math.ceil(frameW) + "px"
       );
+
 
       el.style.setProperty(
         "--h",
-        Math.round(h + pad * 2 + bottom) + "px"
+        Math.ceil(frameH) + "px"
       );
+
+
+      /*
+        IMPORTANT:
+
+        Position based on the actual frame
+        dimensions, NOT a fixed grid.
+      */
+
+      if(
+        x !== startX &&
+        x + frameW > startX + maxRowWidth
+      ){
+
+        x = startX;
+
+        y += rowHeight + gapY;
+
+        rowHeight = 0;
+
+      }
+
+
+      el.style.left =
+        Math.round(x) + "px";
+
+
+      el.style.top =
+        Math.round(y) + "px";
+
+
+      /*
+        Slight natural rotation.
+      */
+
+      el.style.transform =
+        `rotate(${((i * 17) % 9) - 4}deg)`;
+
+
+      x += frameW + gapX;
+
+
+      rowHeight =
+        Math.max(
+          rowHeight,
+          frameH
+        );
 
     };
 
@@ -523,11 +1072,6 @@ function build(){
       setSize
     );
 
-
-    /*
-      If one image fails, it doesn't
-      break the entire board.
-    */
 
     img.addEventListener(
       "error",
@@ -540,34 +1084,18 @@ function build(){
     );
 
 
-    setSize();
+    /*
+      We need the image's real dimensions
+      before laying out the board.
 
+      Don't use a fake 4x3 size for layout.
+    */
 
-    const col =
-      i % cols;
+    if(img.complete && img.naturalWidth){
 
-    const row =
-      Math.floor(i / cols);
+      setSize();
 
-
-    el.style.left =
-      (
-        430 +
-        col * sx +
-        ((i * 37) % 100 - 50)
-      ) + "px";
-
-
-    el.style.top =
-      (
-        300 +
-        row * sy +
-        ((i * 29) % 100 - 50)
-      ) + "px";
-
-
-    el.style.transform =
-      `rotate(${((i * 17) % 9) - 4}deg)`;
+    }
 
 
     el.innerHTML =
@@ -576,12 +1104,16 @@ function build(){
 
     el.appendChild(img);
 
+
     board.appendChild(el);
 
 
     el.onclick = ()=>{
 
-      if(!moved && !wasDragging){
+      if(
+        !moved &&
+        !wasDragging
+      ){
 
         openViewer(i);
 
@@ -594,22 +1126,54 @@ function build(){
 }
 
 
-/*
----------------------------------------------------------
-Animation
----------------------------------------------------------
-*/
+/* =====================================================
+   PAN / ZOOM
+===================================================== */
+
+function clamp(){
+
+  const w =
+    innerWidth;
+
+  const h =
+    innerHeight;
+
+  const s =
+    targetScale;
+
+
+  targetX =
+    Math.min(
+      300,
+      Math.max(
+        w - 16000*s - 300,
+        targetX
+      )
+    );
+
+
+  targetY =
+    Math.min(
+      250,
+      Math.max(
+        h - 16000*s - 250,
+        targetY
+      )
+    );
+
+}
+
 
 function render(){
 
   scale +=
-    (targetScale - scale) * .18;
+    (targetScale-scale)*.18;
 
   tx +=
-    (targetX - tx) * .18;
+    (targetX-tx)*.18;
 
   ty +=
-    (targetY - ty) * .18;
+    (targetY-ty)*.18;
 
 
   board.style.transform =
@@ -621,21 +1185,15 @@ function render(){
 }
 
 
-/*
----------------------------------------------------------
-Dragging
----------------------------------------------------------
-*/
-
-view.onpointerdown = e =>{
+view.onpointerdown = e=>{
 
   if(e.button !== 0)
     return;
 
 
   down = true;
-  moved = false;
 
+  moved = false;
 
   lx = e.clientX;
   ly = e.clientY;
@@ -648,22 +1206,22 @@ view.onpointerdown = e =>{
 };
 
 
-view.onpointermove = e =>{
+view.onpointermove = e=>{
 
   if(!down)
     return;
 
 
   const dx =
-    e.clientX - lx;
+    e.clientX-lx;
 
   const dy =
-    e.clientY - ly;
+    e.clientY-ly;
 
 
   if(
-    Math.abs(dx) > 3 ||
-    Math.abs(dy) > 3
+    Math.abs(dx)>3 ||
+    Math.abs(dy)>3
   ){
 
     moved = true;
@@ -685,7 +1243,7 @@ view.onpointermove = e =>{
 };
 
 
-view.onpointerup = e =>{
+view.onpointerup = e=>{
 
   down = false;
 
@@ -713,13 +1271,11 @@ view.onpointerup = e =>{
 };
 
 
-/*
----------------------------------------------------------
-Zoom
----------------------------------------------------------
-*/
+/* =====================================================
+   ZOOM
+===================================================== */
 
-view.onwheel = e =>{
+view.onwheel = e=>{
 
   e.preventDefault();
 
@@ -728,45 +1284,45 @@ view.onwheel = e =>{
     targetScale;
 
 
-  const f =
+  const factor =
     Math.exp(
-      -e.deltaY * .0012
+      -e.deltaY*.0012
     );
 
 
   targetScale =
     Math.max(
-      .12,
+      .08,
       Math.min(
         3.2,
-        old * f
+        old*factor
       )
     );
 
 
-  const r =
+  const rect =
     view.getBoundingClientRect();
 
 
   const mx =
-    e.clientX - r.left;
+    e.clientX-rect.left;
 
   const my =
-    e.clientY - r.top;
+    e.clientY-rect.top;
 
 
-  const bx =
-    (mx - targetX) / old;
+  const boardX =
+    (mx-targetX)/old;
 
-  const by =
-    (my - targetY) / old;
+  const boardY =
+    (my-targetY)/old;
 
 
   targetX =
-    mx - bx * targetScale;
+    mx-boardX*targetScale;
 
   targetY =
-    my - by * targetScale;
+    my-boardY*targetScale;
 
 
   clamp();
@@ -774,23 +1330,21 @@ view.onwheel = e =>{
 };
 
 
-/*
----------------------------------------------------------
-Keyboard
----------------------------------------------------------
-*/
+/* =====================================================
+   KEYBOARD
+===================================================== */
 
-window.onkeydown = e =>{
+window.onkeydown = e=>{
 
   if(viewer.classList.contains("open")){
 
-    if(e.key === "Escape")
+    if(e.key==="Escape")
       closeViewer();
 
-    if(e.key === "ArrowRight")
+    if(e.key==="ArrowRight")
       next();
 
-    if(e.key === "ArrowLeft")
+    if(e.key==="ArrowLeft")
       prev();
 
     return;
@@ -798,45 +1352,45 @@ window.onkeydown = e =>{
   }
 
 
-  const p = 100;
+  const p=100;
 
 
-  if(e.key === "ArrowLeft")
-    targetX += p;
+  if(e.key==="ArrowLeft")
+    targetX+=p;
 
-  if(e.key === "ArrowRight")
-    targetX -= p;
+  if(e.key==="ArrowRight")
+    targetX-=p;
 
-  if(e.key === "ArrowUp")
-    targetY += p;
+  if(e.key==="ArrowUp")
+    targetY+=p;
 
-  if(e.key === "ArrowDown")
-    targetY -= p;
+  if(e.key==="ArrowDown")
+    targetY-=p;
 
 
   if(
-    e.key === "+" ||
-    e.key === "="
+    e.key==="+" ||
+    e.key==="="
   ){
 
     targetScale =
       Math.min(
         3.2,
-        targetScale * 1.15
+        targetScale*1.15
       );
 
   }
 
 
   if(
-    e.key === "-" ||
-    e.key === "_"
+    e.key==="-" ||
+    e.key==="_"
   ){
 
     targetScale =
       Math.max(
-        .12,
-        targetScale / 1.15
+        .08,
+        targetScale/1.15
       );
 
   }
@@ -847,11 +1401,9 @@ window.onkeydown = e =>{
 };
 
 
-/*
----------------------------------------------------------
-Viewer
----------------------------------------------------------
-*/
+/* =====================================================
+   VIEWER
+===================================================== */
 
 const viewer =
   document.getElementById("viewer");
@@ -862,7 +1414,7 @@ const big =
 
 function openViewer(i){
 
-  current = i;
+  current=i;
 
   big.src =
     photos[current];
@@ -886,7 +1438,7 @@ function closeViewer(){
 function next(){
 
   current =
-    (current + 1) %
+    (current+1) %
     photos.length;
 
   big.src =
@@ -899,10 +1451,10 @@ function prev(){
 
   current =
     (
-      current -
-      1 +
+      current-1+
       photos.length
-    ) % photos.length;
+    ) %
+    photos.length;
 
   big.src =
     photos[current];
@@ -911,59 +1463,114 @@ function prev(){
 
 
 document.getElementById("close")
-  .onclick = closeViewer;
+  .onclick=closeViewer;
 
 document.getElementById("next")
-  .onclick = next;
+  .onclick=next;
 
 document.getElementById("prev")
-  .onclick = prev;
+  .onclick=prev;
 
 
-viewer.onclick = e =>{
+viewer.onclick=e=>{
 
-  if(e.target === viewer)
+  if(e.target===viewer)
     closeViewer();
 
 };
 
 
-/*
-=========================================================
-START
-=========================================================
-*/
+/* =====================================================
+   START
+===================================================== */
 
 (async()=>{
 
-  const loadingText =
-    document.getElementById("loadingText");
+  const status =
+    document.getElementById("loadStatus");
+
+  const bar =
+    document.getElementById("loadingBar");
+
 
   try{
 
-    loadingText.textContent =
-      "Finding your pictures…";
+    status.textContent =
+      "finding your pictures ♡";
+
+    bar.style.width="15%";
 
 
-    photos = await findImages();
+    photos =
+      await findImages();
+
+
+    bar.style.width="45%";
 
 
     if(!photos.length){
 
       throw new Error(
-        "No image files were found in the repository."
+        "No pictures were found."
       );
 
     }
 
 
-    loadingText.textContent =
-      `Found ${photos.length} pictures…`;
+    status.textContent =
+      `${photos.length} memories found ♡`;
+
+
+    /*
+      Wait for image dimensions before building.
+
+      This is what makes the layout accurate:
+      every frame knows its real size before
+      the next frame is positioned.
+    */
+
+    const imagePromises =
+      photos.map(src=>{
+
+        return new Promise(resolve=>{
+
+          const img =
+            new Image();
+
+          img.onload=resolve;
+
+          img.onerror=resolve;
+
+          img.src=src;
+
+        });
+
+      });
+
+
+    bar.style.width="65%";
+
+
+    await Promise.all(
+      imagePromises
+    );
+
+
+    bar.style.width="90%";
 
 
     build();
+
     clamp();
+
     render();
+
+
+    status.textContent =
+      "your memories are ready ♡";
+
+
+    bar.style.width="100%";
 
 
     setTimeout(()=>{
@@ -972,30 +1579,35 @@ START
         .getElementById("loading")
         .classList.add("hidden");
 
-    },500);
+      clearInterval(
+        heartTimer
+      );
+
+    },900);
 
 
     console.log(
-      `Loaded ${photos.length} images`
+      "Loaded images:",
+      photos.length
     );
 
-    console.log(photos);
 
   }catch(error){
 
     console.error(error);
 
 
-    loadingText.innerHTML =
-      `
-      <div>
-        <b>Couldn't load the pictures.</b>
-        <br><br>
-        ${error.message}
-        <br><br>
-        Open the browser console (F12) for details.
-      </div>
-      `;
+    status.innerHTML =
+      "Something went wrong ♡";
+
+
+    bar.style.width="0%";
+
+
+    /*
+      Keep the loading screen visible
+      if GitHub couldn't be reached.
+    */
 
   }
 
@@ -1005,3 +1617,14 @@ START
 
 </body>
 </html>
+```
+
+### What changed
+
+**No more fixed 650×650 positioning.** Each photo's actual dimensions are calculated first, and the next frame is placed after the previous frame. So a portrait, landscape, or weirdly shaped image won't overlap another frame.
+
+**No cropping:** the image uses `object-fit: contain`, and the frame itself is calculated from the image's aspect ratio. The entire picture is visible.
+
+**New loading screen:** dark romantic background, subtle stars, floating hearts, pulsing heart, progress bar, and a little `"our little memories"` message.
+
+And importantly, **you don't need to change the filenames again**. The GitHub discovery code finds the actual image files in the repo rather than us guessing the numbering pattern.
